@@ -1,24 +1,24 @@
 package patterns
 
-
-import(
+import (
+	"fmt"
 	"math"
 	"time"
-	"fmt"
-	"stock-helper/server/structs"
+
+	"github.com/go_projects/candle-stick-patterns/server/structs"
 )
 
 type Day struct {
-	Open float64
-	High float64
-	Close float64
-	Low float64
-	Ct float64
-	Cb float64
-	Uw float64
-	Lw float64
+	Open      float64
+	High      float64
+	Close     float64
+	Low       float64
+	Ct        float64
+	Cb        float64
+	Uw        float64
+	Lw        float64
 	StartTime int64
-	EndTime int64
+	EndTime   int64
 }
 
 func CreateDay(dayData structs.DataPoint) Day {
@@ -28,19 +28,19 @@ func CreateDay(dayData structs.DataPoint) Day {
 	close := dayData.Y[3]
 	ct := math.Abs(high - low)
 	cb := math.Abs(open - close)
-	date := time.Unix(int64(dayData.X / 1000), 0)
+	date := time.Unix(int64(dayData.X/1000), 0)
 	// fmt.Printf("Date: %v\n", date)
 	year, month, day := date.Date()
 	denver, err := time.LoadLocation("America/Denver")
-    if err != nil {
-        fmt.Println(err)
-        // return
+	if err != nil {
+		fmt.Println(err)
+		// return
 	}
 	startOfDay := time.Date(year, month, day, 0, 0, 0, 0, denver)
 	endOfDay := time.Date(year, month, day, 23, 0, 0, 0, denver)
 
 	createdDay := Day{Open: open, High: high, Close: close, Low: low, Ct: ct, Cb: cb, StartTime: startOfDay.Unix() * 1000, EndTime: endOfDay.Unix() * 1000}
-	if Bullish(createdDay){
+	if Bullish(createdDay) {
 		createdDay.Uw = createdDay.High - createdDay.Close
 		createdDay.Lw = createdDay.Open - createdDay.Open
 	} else {
@@ -79,20 +79,18 @@ func LadderBottom(days ...structs.DataPoint) (pattern structs.StockPattern) {
 	if (!Bullish(lastDay)) || (lastDay.Open <= dayFour.Close) || (lastDay.Cb <= dayFour.Cb) {
 		return
 	}
-	
 
 	pattern = structs.StockPattern{Name: "Ladder Bottom"}
-		pattern.StripLines = append(pattern.StripLines, struct{
-			StartValue int64     `json:"startValue"`
-			EndValue   int64     `json:"endValue"`
-			Color      string  `json:"color"`
-			Label      string  `json:"label"`
-			Opacity    float64 `json:"opacity"`
-		}{StartValue: dayOne.StartTime, EndValue: lastDay.EndTime, Color: "#fcff4d", Label: "Ladder Bottom", Opacity: 0.4})
-		return
+	pattern.StripLines = append(pattern.StripLines, struct {
+		StartValue int64   `json:"startValue"`
+		EndValue   int64   `json:"endValue"`
+		Color      string  `json:"color"`
+		Label      string  `json:"label"`
+		Opacity    float64 `json:"opacity"`
+	}{StartValue: dayOne.StartTime, EndValue: lastDay.EndTime, Color: "#fcff4d", Label: "Ladder Bottom", Opacity: 0.4})
+	return
 
 }
-
 
 func BullThreeLineStrike(days ...structs.DataPoint) (pattern structs.StockPattern) {
 	initDay := CreateDay(days[0])
@@ -107,7 +105,7 @@ func BullThreeLineStrike(days ...structs.DataPoint) (pattern structs.StockPatter
 	if (dayOne.Close <= initDay.Close) || (dayTwo.Close <= dayOne.Close) || (dayThree.Close <= dayTwo.Close) {
 		return
 	}
-	if (dayOne.Low < initDay.Low) || (dayTwo.Low <= dayOne.Low) || (dayThree.Low <= dayTwo.Low){
+	if (dayOne.Low < initDay.Low) || (dayTwo.Low <= dayOne.Low) || (dayThree.Low <= dayTwo.Low) {
 		return
 	}
 	if ((dayOne.High <= initDay.High) || (dayTwo.High <= dayOne.High)) || ((dayThree.High <= dayTwo.High) || (dayFour.High < dayThree.High)) {
@@ -118,14 +116,14 @@ func BullThreeLineStrike(days ...structs.DataPoint) (pattern structs.StockPatter
 	}
 
 	pattern = structs.StockPattern{Name: "Bull Three Line Strike"}
-		pattern.StripLines = append(pattern.StripLines, struct{
-			StartValue int64     `json:"startValue"`
-			EndValue   int64     `json:"endValue"`
-			Color      string  `json:"color"`
-			Label      string  `json:"label"`
-			Opacity    float64 `json:"opacity"`
-		}{StartValue: dayOne.StartTime, EndValue: dayFour.EndTime, Color: "#fcff4d", Label: "Bull Three Line Strike", Opacity: 0.4})
-		return
+	pattern.StripLines = append(pattern.StripLines, struct {
+		StartValue int64   `json:"startValue"`
+		EndValue   int64   `json:"endValue"`
+		Color      string  `json:"color"`
+		Label      string  `json:"label"`
+		Opacity    float64 `json:"opacity"`
+	}{StartValue: dayOne.StartTime, EndValue: dayFour.EndTime, Color: "#fcff4d", Label: "Bull Three Line Strike", Opacity: 0.4})
+	return
 
 }
 
@@ -142,9 +140,9 @@ func BearThreeLineStrike(days ...structs.DataPoint) (pattern structs.StockPatter
 	if (dayOne.Close >= initDay.Close) || (dayTwo.Close >= dayOne.Close) || (dayThree.Close >= dayTwo.Close) {
 		return
 	}
-	if (dayOne.Low > initDay.Low) || (dayTwo.Low >= dayOne.Low) || (dayThree.Low >= dayTwo.Low) || (dayFour.Low > dayThree.Low){
+	if (dayOne.Low > initDay.Low) || (dayTwo.Low >= dayOne.Low) || (dayThree.Low >= dayTwo.Low) || (dayFour.Low > dayThree.Low) {
 		return
-	}	
+	}
 	if (dayOne.High >= initDay.High) || (dayTwo.High >= dayOne.High) || (dayThree.High >= dayTwo.High) {
 		return
 	}
@@ -153,26 +151,23 @@ func BearThreeLineStrike(days ...structs.DataPoint) (pattern structs.StockPatter
 	}
 
 	pattern = structs.StockPattern{Name: "Bear Three Line Strike"}
-		pattern.StripLines = append(pattern.StripLines, struct{
-			StartValue int64     `json:"startValue"`
-			EndValue   int64     `json:"endValue"`
-			Color      string  `json:"color"`
-			Label      string  `json:"label"`
-			Opacity    float64 `json:"opacity"`
-		}{StartValue: dayOne.StartTime, EndValue: dayFour.EndTime, Color: "#fcff4d", Label: "Bear Three Line Strike", Opacity: 0.4})
-		return
+	pattern.StripLines = append(pattern.StripLines, struct {
+		StartValue int64   `json:"startValue"`
+		EndValue   int64   `json:"endValue"`
+		Color      string  `json:"color"`
+		Label      string  `json:"label"`
+		Opacity    float64 `json:"opacity"`
+	}{StartValue: dayOne.StartTime, EndValue: dayFour.EndTime, Color: "#fcff4d", Label: "Bear Three Line Strike", Opacity: 0.4})
+	return
 
 }
-
-
 
 func ThreeWhiteSoldiers(days ...structs.DataPoint) (pattern structs.StockPattern) {
 	initDay := CreateDay(days[0])
 	dayOne := CreateDay(days[1])
 	dayTwo := CreateDay(days[2])
 	dayThree := CreateDay(days[3])
-	upperWick := dayThree.High - dayThree.Close 
-	
+	upperWick := dayThree.High - dayThree.Close
 
 	if (Bullish(initDay)) || (!Bullish(dayOne)) {
 		return
@@ -194,17 +189,15 @@ func ThreeWhiteSoldiers(days ...structs.DataPoint) (pattern structs.StockPattern
 		return
 	}
 
-	
-
 	pattern = structs.StockPattern{Name: "Three White Soldiers"}
-		pattern.StripLines = append(pattern.StripLines, struct{
-			StartValue int64     `json:"startValue"`
-			EndValue   int64     `json:"endValue"`
-			Color      string  `json:"color"`
-			Label      string  `json:"label"`
-			Opacity    float64 `json:"opacity"`
-		}{StartValue: dayOne.StartTime, EndValue: dayThree.EndTime, Color: "#fcff4d", Label: "Three White Soldiers", Opacity: 0.4})
-		return
+	pattern.StripLines = append(pattern.StripLines, struct {
+		StartValue int64   `json:"startValue"`
+		EndValue   int64   `json:"endValue"`
+		Color      string  `json:"color"`
+		Label      string  `json:"label"`
+		Opacity    float64 `json:"opacity"`
+	}{StartValue: dayOne.StartTime, EndValue: dayThree.EndTime, Color: "#fcff4d", Label: "Three White Soldiers", Opacity: 0.4})
+	return
 
 	// fmt.Printf("initDay: %v\n", InitDay)
 }
@@ -214,8 +207,7 @@ func ThreeBlackCrows(days ...structs.DataPoint) (pattern structs.StockPattern) {
 	dayOne := CreateDay(days[1])
 	dayTwo := CreateDay(days[2])
 	dayThree := CreateDay(days[3])
-	// upperWick := dayThree.High - dayThree.Close 
-	
+	// upperWick := dayThree.High - dayThree.Close
 
 	if (!Bullish(initDay)) || (Bullish(dayOne)) {
 		return
@@ -230,7 +222,7 @@ func ThreeBlackCrows(days ...structs.DataPoint) (pattern structs.StockPattern) {
 	if (dayTwo.Open >= dayOne.Open) || (dayTwo.Close >= dayOne.Close) || (dayTwo.High >= dayOne.High) {
 		return
 	}
-	
+
 	if (dayThree.Open >= dayTwo.Open) || (dayThree.Close >= dayTwo.Close) {
 		return
 	}
@@ -238,21 +230,18 @@ func ThreeBlackCrows(days ...structs.DataPoint) (pattern structs.StockPattern) {
 		return
 	}
 
-	
-
 	pattern = structs.StockPattern{Name: "Three Black Crows"}
-		pattern.StripLines = append(pattern.StripLines, struct{
-			StartValue int64     `json:"startValue"`
-			EndValue   int64     `json:"endValue"`
-			Color      string  `json:"color"`
-			Label      string  `json:"label"`
-			Opacity    float64 `json:"opacity"`
-		}{StartValue: dayOne.StartTime, EndValue: dayThree.EndTime, Color: "#fcff4d", Label: "Three Black Crows", Opacity: 0.4})
-		return
+	pattern.StripLines = append(pattern.StripLines, struct {
+		StartValue int64   `json:"startValue"`
+		EndValue   int64   `json:"endValue"`
+		Color      string  `json:"color"`
+		Label      string  `json:"label"`
+		Opacity    float64 `json:"opacity"`
+	}{StartValue: dayOne.StartTime, EndValue: dayThree.EndTime, Color: "#fcff4d", Label: "Three Black Crows", Opacity: 0.4})
+	return
 
 	// fmt.Printf("initDay: %v\n", InitDay)
 }
-
 
 func MorningStar(days ...structs.DataPoint) (pattern structs.StockPattern) {
 	dayOne := CreateDay(days[0])
@@ -270,7 +259,7 @@ func MorningStar(days ...structs.DataPoint) (pattern structs.StockPattern) {
 	if dayTwo.Cb > dayOneCbCap {
 		return
 	}
-	
+
 	// if dayTwo.Uw > upperWickLimit {
 	// 	return
 	// }
@@ -282,9 +271,9 @@ func MorningStar(days ...structs.DataPoint) (pattern structs.StockPattern) {
 	}
 
 	pattern = structs.StockPattern{Name: "Morning Star"}
-	pattern.StripLines = append(pattern.StripLines, struct{
-		StartValue int64     `json:"startValue"`
-		EndValue   int64     `json:"endValue"`
+	pattern.StripLines = append(pattern.StripLines, struct {
+		StartValue int64   `json:"startValue"`
+		EndValue   int64   `json:"endValue"`
 		Color      string  `json:"color"`
 		Label      string  `json:"label"`
 		Opacity    float64 `json:"opacity"`
@@ -309,7 +298,7 @@ func EveningStar(days ...structs.DataPoint) (pattern structs.StockPattern) {
 	if (dayTwo.Cb >= dayOne.Cb) || (dayTwo.Cb > dayOneCbCap) {
 		return
 	}
-	
+
 	if (dayThree.Open >= dayTwo.Open) || (dayThree.Open >= dayTwo.Close) {
 		return
 	}
@@ -318,9 +307,9 @@ func EveningStar(days ...structs.DataPoint) (pattern structs.StockPattern) {
 	}
 
 	pattern = structs.StockPattern{Name: "Evening Star"}
-	pattern.StripLines = append(pattern.StripLines, struct{
-		StartValue int64     `json:"startValue"`
-		EndValue   int64     `json:"endValue"`
+	pattern.StripLines = append(pattern.StripLines, struct {
+		StartValue int64   `json:"startValue"`
+		EndValue   int64   `json:"endValue"`
 		Color      string  `json:"color"`
 		Label      string  `json:"label"`
 		Opacity    float64 `json:"opacity"`
@@ -328,7 +317,6 @@ func EveningStar(days ...structs.DataPoint) (pattern structs.StockPattern) {
 	return
 
 }
-
 
 func RisingThreeMethods(days ...structs.DataPoint) (pattern structs.StockPattern) {
 	dayOne := CreateDay(days[0])
@@ -338,7 +326,7 @@ func RisingThreeMethods(days ...structs.DataPoint) (pattern structs.StockPattern
 	lastDay := CreateDay(days[4])
 	paddedCbLimit := dayOne.Cb * 0.80
 
-	if (dayOne.Close <= dayOne.Open) || (dayOne.Cb <= firstBear.Cb){
+	if (dayOne.Close <= dayOne.Open) || (dayOne.Cb <= firstBear.Cb) {
 		return
 	}
 	if (firstBear.Close >= firstBear.Open) || (secondBear.Close >= secondBear.Open) || (thirdBear.Close >= thirdBear.Open) {
@@ -347,7 +335,7 @@ func RisingThreeMethods(days ...structs.DataPoint) (pattern structs.StockPattern
 	if (dayOne.Close < firstBear.Open) || (dayOne.Close < secondBear.Open) || (dayOne.Close < thirdBear.Open) {
 		return
 	}
-	if (dayOne.Low < firstBear.Low) || (dayOne.Low < secondBear.Low) || (dayOne.Low < thirdBear.Low){
+	if (dayOne.Low < firstBear.Low) || (dayOne.Low < secondBear.Low) || (dayOne.Low < thirdBear.Low) {
 		return
 	}
 	if (firstBear.Close < dayOne.Open) || (secondBear.Close < dayOne.Open) || (thirdBear.Close < dayOne.Open) {
@@ -364,9 +352,9 @@ func RisingThreeMethods(days ...structs.DataPoint) (pattern structs.StockPattern
 	}
 
 	pattern = structs.StockPattern{Name: "Rising Three Methods"}
-	pattern.StripLines = append(pattern.StripLines, struct{
-		StartValue int64     `json:"startValue"`
-		EndValue   int64     `json:"endValue"`
+	pattern.StripLines = append(pattern.StripLines, struct {
+		StartValue int64   `json:"startValue"`
+		EndValue   int64   `json:"endValue"`
 		Color      string  `json:"color"`
 		Label      string  `json:"label"`
 		Opacity    float64 `json:"opacity"`
@@ -382,7 +370,7 @@ func FallingThreeMethods(days ...structs.DataPoint) (pattern structs.StockPatter
 	lastDay := CreateDay(days[4])
 	paddedCbLimit := dayOne.Cb * 0.80
 
-	if (dayOne.Close >= dayOne.Open) || (dayOne.Cb <= firstBull.Cb){
+	if (dayOne.Close >= dayOne.Open) || (dayOne.Cb <= firstBull.Cb) {
 		return
 	}
 	if (firstBull.Close <= firstBull.Open) || (secondBull.Close <= secondBull.Open) || (thirdBull.Close <= thirdBull.Open) {
@@ -391,7 +379,7 @@ func FallingThreeMethods(days ...structs.DataPoint) (pattern structs.StockPatter
 	if (dayOne.Close > firstBull.Open) || (dayOne.Close > secondBull.Open) || (dayOne.Close > thirdBull.Open) {
 		return
 	}
-	if (dayOne.High < firstBull.High) || (dayOne.High < secondBull.High) || (dayOne.High < thirdBull.High){
+	if (dayOne.High < firstBull.High) || (dayOne.High < secondBull.High) || (dayOne.High < thirdBull.High) {
 		return
 	}
 	if (firstBull.Close > dayOne.Open) || (secondBull.Close > dayOne.Open) || (thirdBull.Close > dayOne.Open) {
@@ -408,17 +396,15 @@ func FallingThreeMethods(days ...structs.DataPoint) (pattern structs.StockPatter
 	}
 
 	pattern = structs.StockPattern{Name: "Rising Three Methods"}
-	pattern.StripLines = append(pattern.StripLines, struct{
-		StartValue int64     `json:"startValue"`
-		EndValue   int64     `json:"endValue"`
+	pattern.StripLines = append(pattern.StripLines, struct {
+		StartValue int64   `json:"startValue"`
+		EndValue   int64   `json:"endValue"`
 		Color      string  `json:"color"`
 		Label      string  `json:"label"`
 		Opacity    float64 `json:"opacity"`
 	}{StartValue: dayOne.StartTime, EndValue: lastDay.EndTime, Color: "#fcff4d", Label: "Rising Three Methods", Opacity: 0.4})
 	return
 }
-
-
 
 func BullishMatHold(days ...structs.DataPoint) (pattern structs.StockPattern) {
 	firstDay := CreateDay(days[0])
@@ -430,7 +416,7 @@ func BullishMatHold(days ...structs.DataPoint) (pattern structs.StockPattern) {
 	if (firstDay.Open >= firstDay.Close) || (lastDay.Open >= lastDay.Close) {
 		return
 	}
-	if (secondDay.Close >= secondDay.Open)  || (fourthDay.Close >= fourthDay.Open) {
+	if (secondDay.Close >= secondDay.Open) || (fourthDay.Close >= fourthDay.Open) {
 		return
 	}
 	openLimit := firstDay.Close + (firstDay.Cb * 0.10)
@@ -441,7 +427,7 @@ func BullishMatHold(days ...structs.DataPoint) (pattern structs.StockPattern) {
 	if (secondDay.Cb < bodyMin) || (thirdDay.Cb < bodyMin) || (fourthDay.Cb < bodyMin) {
 		return
 	}
-	if (secondDay.Cb >= firstDay.Cb) || (thirdDay.Cb >= firstDay.Cb) || (fourthDay.Cb >= firstDay.Cb){
+	if (secondDay.Cb >= firstDay.Cb) || (thirdDay.Cb >= firstDay.Cb) || (fourthDay.Cb >= firstDay.Cb) {
 		return
 	}
 	if thirdDay.Open > thirdDay.Close {
@@ -460,7 +446,7 @@ func BullishMatHold(days ...structs.DataPoint) (pattern structs.StockPattern) {
 			return
 		}
 	}
-	if (secondDay.Open <= firstDay.Low) || (thirdDay.Open <= firstDay.Low) || (fourthDay.Open <= firstDay.Low){
+	if (secondDay.Open <= firstDay.Low) || (thirdDay.Open <= firstDay.Low) || (fourthDay.Open <= firstDay.Low) {
 		return
 	}
 	if (secondDay.Close <= firstDay.Low) || (thirdDay.Close <= firstDay.Low) || (fourthDay.Close <= firstDay.Low) {
@@ -471,15 +457,14 @@ func BullishMatHold(days ...structs.DataPoint) (pattern structs.StockPattern) {
 		return
 	}
 	pattern = structs.StockPattern{Name: "Bullish Mat Hold"}
-	pattern.StripLines = append(pattern.StripLines, struct{
-		StartValue int64     `json:"startValue"`
-		EndValue   int64     `json:"endValue"`
+	pattern.StripLines = append(pattern.StripLines, struct {
+		StartValue int64   `json:"startValue"`
+		EndValue   int64   `json:"endValue"`
 		Color      string  `json:"color"`
 		Label      string  `json:"label"`
 		Opacity    float64 `json:"opacity"`
 	}{StartValue: firstDay.StartTime, EndValue: lastDay.EndTime, Color: "#fcff4d", Label: "Bullish Mat Hold", Opacity: 0.4})
 	return
-
 
 }
 
@@ -506,9 +491,9 @@ func BearishAbandonedBaby(days ...structs.DataPoint) (pattern structs.StockPatte
 		return
 	}
 	pattern = structs.StockPattern{Name: "Bearish Abnd. Baby"}
-	pattern.StripLines = append(pattern.StripLines, struct{
-		StartValue int64     `json:"startValue"`
-		EndValue   int64     `json:"endValue"`
+	pattern.StripLines = append(pattern.StripLines, struct {
+		StartValue int64   `json:"startValue"`
+		EndValue   int64   `json:"endValue"`
 		Color      string  `json:"color"`
 		Label      string  `json:"label"`
 		Opacity    float64 `json:"opacity"`
@@ -526,11 +511,11 @@ func ThreeStarsInTheSouth(days ...structs.DataPoint) (pattern structs.StockPatte
 		return
 	}
 	dayOneLowerWick := dayOne.Close - dayOne.Low
-	lowerWickMin := func (cb float64) float64 {
+	lowerWickMin := func(cb float64) float64 {
 		return cb * 0.30
 	}
 	dayTwoLowerWick := dayTwo.Close - dayTwo.Low
-	
+
 	if (dayOneLowerWick < lowerWickMin(dayOne.Cb)) || (dayTwoLowerWick < lowerWickMin(dayTwo.Cb)) {
 		return
 	}
@@ -547,11 +532,10 @@ func ThreeStarsInTheSouth(days ...structs.DataPoint) (pattern structs.StockPatte
 		return
 	}
 
-
 	pattern = structs.StockPattern{Name: "Three stars In South"}
-	pattern.StripLines = append(pattern.StripLines, struct{
-		StartValue int64     `json:"startValue"`
-		EndValue   int64     `json:"endValue"`
+	pattern.StripLines = append(pattern.StripLines, struct {
+		StartValue int64   `json:"startValue"`
+		EndValue   int64   `json:"endValue"`
 		Color      string  `json:"color"`
 		Label      string  `json:"label"`
 		Opacity    float64 `json:"opacity"`
@@ -559,7 +543,6 @@ func ThreeStarsInTheSouth(days ...structs.DataPoint) (pattern structs.StockPatte
 	return
 
 }
-
 
 func ThreeInsideUp(days ...structs.DataPoint) (pattern structs.StockPattern) {
 	dayOne := CreateDay(days[0])
@@ -576,11 +559,10 @@ func ThreeInsideUp(days ...structs.DataPoint) (pattern structs.StockPattern) {
 		return
 	}
 
-
 	pattern = structs.StockPattern{Name: "Three Inside Up"}
-	pattern.StripLines = append(pattern.StripLines, struct{
-		StartValue int64     `json:"startValue"`
-		EndValue   int64     `json:"endValue"`
+	pattern.StripLines = append(pattern.StripLines, struct {
+		StartValue int64   `json:"startValue"`
+		EndValue   int64   `json:"endValue"`
 		Color      string  `json:"color"`
 		Label      string  `json:"label"`
 		Opacity    float64 `json:"opacity"`
@@ -589,13 +571,9 @@ func ThreeInsideUp(days ...structs.DataPoint) (pattern structs.StockPattern) {
 
 }
 
-
-
-
-func PiercingLine(days ...structs.DataPoint) (pattern structs.StockPattern){
+func PiercingLine(days ...structs.DataPoint) (pattern structs.StockPattern) {
 	dayOne := CreateDay(days[0])
 	dayTwo := CreateDay(days[1])
-	
 
 	if dayOne.Open < dayOne.Close {
 		return
@@ -603,7 +581,7 @@ func PiercingLine(days ...structs.DataPoint) (pattern structs.StockPattern){
 	if dayTwo.Close < dayTwo.Open {
 		return
 	}
-	if dayOne.Close <=  dayTwo.Open {
+	if dayOne.Close <= dayTwo.Open {
 		return
 	}
 	closeLimit := dayOne.Close + (dayOne.Cb / 2)
@@ -615,9 +593,9 @@ func PiercingLine(days ...structs.DataPoint) (pattern structs.StockPattern){
 	}
 
 	pattern = structs.StockPattern{Name: "Piercing Line"}
-	pattern.StripLines = append(pattern.StripLines, struct{
-		StartValue int64     `json:"startValue"`
-		EndValue   int64     `json:"endValue"`
+	pattern.StripLines = append(pattern.StripLines, struct {
+		StartValue int64   `json:"startValue"`
+		EndValue   int64   `json:"endValue"`
 		Color      string  `json:"color"`
 		Label      string  `json:"label"`
 		Opacity    float64 `json:"opacity"`
@@ -625,18 +603,14 @@ func PiercingLine(days ...structs.DataPoint) (pattern structs.StockPattern){
 	return
 }
 
-
-
-
 func Hammer(days ...structs.DataPoint) (pattern structs.StockPattern) {
 	initDay := CreateDay(days[0])
 	hammer := CreateDay(days[1])
 	// lowerWick := math.Abs(hammer.Open - hammer.Close)
-	
 
 	if initDay.Open > initDay.Close {
 		return
-	} 
+	}
 	var upperWick float64
 	var lowerWick float64
 	if hammer.Close < hammer.Open {
@@ -652,9 +626,9 @@ func Hammer(days ...structs.DataPoint) (pattern structs.StockPattern) {
 	}
 
 	pattern = structs.StockPattern{Name: "Hammer"}
-	pattern.StripLines = append(pattern.StripLines, struct{
-		StartValue int64     `json:"startValue"`
-		EndValue   int64     `json:"endValue"`
+	pattern.StripLines = append(pattern.StripLines, struct {
+		StartValue int64   `json:"startValue"`
+		EndValue   int64   `json:"endValue"`
 		Color      string  `json:"color"`
 		Label      string  `json:"label"`
 		Opacity    float64 `json:"opacity"`
@@ -663,14 +637,11 @@ func Hammer(days ...structs.DataPoint) (pattern structs.StockPattern) {
 
 }
 
-
-
-
 func IsDoji(day Day) bool {
 
 	// dayOne := CreateDay(dayData)
 
-	if day.Open == day.Close || day.Cb <= (day.Ct * 0.06) {
+	if day.Open == day.Close || day.Cb <= (day.Ct*0.06) {
 		// pattern = structs.StockPattern{Name: "Doji"}
 		// pattern.StripLines = append(pattern.StripLines, struct{
 		// 	StartValue int64     `json:"startValue"`
@@ -683,7 +654,5 @@ func IsDoji(day Day) bool {
 		return true
 	}
 	// err = fmt.Errorf("No patterns found")
-	 return false
+	return false
 }
-
-
